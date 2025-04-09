@@ -1,59 +1,156 @@
-# 加密货币费率监控系统
+# Funding Rate Strategy Monitoring System
 
-## 项目概述
-这是一个用于监控加密货币期货合约资金费率的系统，主要针对币安(Binance)交易所。该系统能够实时跟踪指定交易对的现货价格、期货价格、期现溢价率、资金费率和持仓量，并以可视化图表展示历史数据变化。
+A web application for monitoring cryptocurrency funding rates, premiums, and open interest to identify potential trading opportunities. This application is built using Next.js, TypeScript, and TailwindCSS, and can be deployed to Vercel or GitHub Pages.
 
-## 主要功能
-- 同时监控两个自定义交易对
-- 实时显示现货价格、期货价格、期现溢价率、资金费率和持仓量
-- 提供图表可视化展示数据变化趋势
-- 统计并展示全市场资金费率最高/最低的交易对
-- 跟踪资金费率变化最快的交易对
-- 自动加载和展示历史数据（过去4小时）
+## Features
 
-## 系统组成
-系统由两个主要组件构成：
-1. **Web界面(app.py)** - 使用Streamlit构建的交互式Web界面，用于数据展示和监控
-2. **数据采集服务(fee_stac)** - 定期采集全市场资金费率数据，并进行统计分析
+- Real-time monitoring of cryptocurrency funding rates
+- Visualization of price premiums and open interest
+- Statistics dashboard for identifying highest/lowest funding rates
+- Historical data for trend analysis
+- Simple and elegant UI
+- Client-side only, no backend required
+- Persistent storage using localStorage
 
-## 安装步骤
-1. 确保已安装Python 3.7+
-2. 克隆或下载本项目代码
-3. 安装依赖库:
-```bash
-pip install streamlit pandas plotly requests schedule
+## Getting Started
+
+### Prerequisites
+
+- Node.js 14+ and npm/yarn
+
+### Installation
+
+1. Clone the repository
+   ```bash
+   git clone https://github.com/username/funding-rate-strategy-monitoring-system.git
+   cd funding-rate-strategy-monitoring-system
+   ```
+
+2. Install dependencies
+   ```bash
+   npm install
+   # or
+   yarn
+   ```
+
+3. Start the development server
+   ```bash
+   npm run dev
+   # or
+   yarn dev
+   ```
+
+4. Open [http://localhost:3000](http://localhost:3000) in your browser
+
+## Deployment
+
+### Deploy to Vercel
+
+The easiest way to deploy this application is using Vercel:
+
+1. Push your code to a GitHub repository
+2. Connect to Vercel
+3. Import your repository
+4. Vercel will automatically detect Next.js and deploy your application
+
+### Deploy to GitHub Pages
+
+To deploy to GitHub Pages:
+
+1. Update the `next.config.js` file:
+   ```js
+   /** @type {import('next').NextConfig} */
+   const nextConfig = {
+     reactStrictMode: true,
+     swcMinify: true,
+     basePath: '/repo-name',
+     assetPrefix: '/repo-name',
+     images: {
+       unoptimized: true,
+     },
+   }
+
+   module.exports = nextConfig
+   ```
+
+2. Add a GitHub workflow for deployment:
+   ```yaml
+   name: Deploy to GitHub Pages
+
+   on:
+     push:
+       branches: [main]
+
+   jobs:
+     build-and-deploy:
+       runs-on: ubuntu-latest
+       steps:
+         - name: Checkout
+           uses: actions/checkout@v3
+
+         - name: Setup Node.js
+           uses: actions/setup-node@v3
+           with:
+             node-version: 16
+
+         - name: Install dependencies
+           run: npm ci
+
+         - name: Build and Export
+           run: npm run build && npm run export
+
+         - name: Deploy to GitHub Pages
+           uses: JamesIves/github-pages-deploy-action@4.1.5
+           with:
+             branch: gh-pages
+             folder: out
+   ```
+
+3. Push your changes and GitHub Actions will handle the deployment
+
+## Project Structure
+
+```
+├── public/              # Static assets
+├── src/
+│   ├── components/      # React components
+│   │   ├── charts/      # Chart components
+│   │   ├── layout/      # Layout components
+│   │   └── ui/          # UI components
+│   ├── pages/           # Next.js pages
+│   ├── services/        # API services
+│   ├── store/           # State management
+│   ├── styles/          # Global styles
+│   ├── types/           # TypeScript types
+│   └── utils/           # Utility functions
+├── next.config.js       # Next.js configuration
+├── package.json         # Dependencies
+├── tailwind.config.js   # Tailwind configuration
+└── tsconfig.json        # TypeScript configuration
 ```
 
-## 使用说明
-1. 启动数据采集服务:
-```bash
-python fee_stac
-```
+## How It Works
 
-2. 启动Web界面:
-```bash
-streamlit run app.py
-```
+The application connects directly to the Binance API from the client side to fetch:
 
-3. 在浏览器中访问Web界面(默认为 http://localhost:8501)
+1. Spot and futures prices to calculate premiums
+2. Funding rates for perpetual contracts
+3. Open interest data to gauge market sentiment
 
-4. 在侧边栏中输入要监控的交易对（例如：BTCUSDT, ETHUSDT），然后点击"开始监控"按钮
+All data is stored in the client's localStorage, allowing for persistence between sessions without the need for a backend server.
 
-## 数据说明
-- **现货价格**: 交易对在现货市场的最新价格
-- **期货价格**: 交易对在永续合约市场的最新价格
-- **期现溢价率**: (期货价格-现货价格)/现货价格×100%
-- **资金费率**: 永续合约的资金费率，正值表示多头向空头支付，负值表示空头向多头支付
-- **持仓量**: 永续合约的总持仓数量
+## Trading Strategies
 
-## 统计数据更新
-系统每5分钟自动更新一次全市场费率统计数据，包括:
-- 费率最高的交易对
-- 费率最低的交易对
-- 费率上升最快的交易对
-- 费率下降最快的交易对
+The application is designed to help identify opportunities for:
 
-## 注意事项
-- 数据来源于币安API，需要确保网络能够正常访问币安的API服务
-- 系统默认显示过去4小时的历史数据
-- 数据更新频率为10秒一次
+1. **Cash and Carry:** Going long on spot and short on futures when funding rates are positive
+2. **Reverse Cash and Carry:** Going short on spot and long on futures when funding rates are negative
+3. **Funding Rate Arbitrage:** Taking advantage of funding rate differences between different assets
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Disclaimer
+
+This application is for informational purposes only and does not constitute financial advice. Trading cryptocurrency derivatives involves significant risk. Always do your own research before making investment decisions.
